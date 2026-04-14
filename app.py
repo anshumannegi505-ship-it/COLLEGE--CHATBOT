@@ -4,7 +4,11 @@ import time
 # -------------------------------
 # Page Config
 # -------------------------------
-st.set_page_config(page_title="Graphic Era Smart Chatbot", page_icon="🎓", layout="wide")
+st.set_page_config(
+    page_title="Graphic Era Smart Chatbot",
+    page_icon="🎓",
+    layout="wide"
+)
 
 # -------------------------------
 # Custom CSS
@@ -28,6 +32,12 @@ h1 {
     background-color: #1e293b;
 }
 
+[data-testid="stChatMessage"] p {
+    color: white !important;
+    font-weight: bold;
+    font-size: 16px;
+}
+
 section[data-testid="stSidebar"] {
     background-color: #020617;
 }
@@ -43,46 +53,45 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------------------
-# Welcome Message (only once)
+# Welcome Message
 # -------------------------------
 if "welcome_shown" not in st.session_state:
     st.session_state.welcome_shown = True
     st.info("👋 Welcome! Ask me anything about Graphic Era University.")
 
 # -------------------------------
-# Data
-
+# College Data
+# -------------------------------
 college_data = {
-    "about": """LOCATION" : Dehadun , uttrakhand \n
-     ESTABLISHED: 1997 \n
-     Founder: Prof.(Dr.)Kamal Ghanshala \n
-     Type: Private Deemed University \n
-     Accreditation: NAAC A+ Grade \n
-     Approved by: UGC, AICTE""",
-    
-    "courses": "B.Tech, BCA, MBA, BBA, B.Com, MCA TOTAL 100+ course (UG + PG + PHD + Diploma)" ,
-    "fees": "B.Tech: ₹2.5–3.5 LPA  BCA: ₹1.2–1.5 LPA PER YEAR",
-    "placement": "Highest: ₹65+ LPA  Avg: ₹5–8 LPA",
-   
-    "hostel": """Name:\n
-    CHANDRA SHEKHER AZAD\n  
-    SARDAR PATEL HOSTEL\n  
-    NETAJI SUBHASH CHANDRA HOSTEL\n
-    SAI HOSTEL  \n
-    hostel fees: 160000 These fees may vary for different hostels """, 
+    "about": """LOCATION: Dehradun, Uttarakhand
+ESTABLISHED: 1997
+Founder: Prof. (Dr.) Kamal Ghanshala
+Type: Private Deemed University
+Accreditation: NAAC A+ Grade
+Approved by: UGC, AICTE""",
 
-     
-    
-   
-    "faculty":"600+ Faculty | PhD Holders"
-    
-   
+    "courses": "B.Tech, BCA, MBA, BBA, B.Com, MCA (100+ courses including UG, PG, PhD, Diploma)",
+
+    "fees": "B.Tech: ₹2.5–3.5 LPA | BCA: ₹1.2–1.5 LPA per year",
+
+    "placement": "Highest: ₹65+ LPA | Average: ₹5–8 LPA",
+
+    "hostel": """Hostels:
+- Chandra Shekhar Azad Hostel
+- Sardar Patel Hostel
+- Netaji Subhash Chandra Hostel
+- Sai Hostel
+
+Hostel Fees: Approx ₹1,60,000/year (may vary)""",
+
+    "faculty": "600+ Faculty members | Many are PhD holders"
 }
 
 # -------------------------------
 # Sidebar
 # -------------------------------
 st.sidebar.title("📌 Quick Menu")
+
 option = st.sidebar.selectbox(
     "Select Option",
     ["Chat Mode", "About", "Courses", "Fees", "Placement", "Hostel", "Faculty"]
@@ -93,7 +102,7 @@ if st.sidebar.button("🗑 Clear Chat"):
     st.rerun()
 
 # -------------------------------
-# Session
+# Session State
 # -------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -102,7 +111,7 @@ if "messages" not in st.session_state:
 # Sidebar Output
 # -------------------------------
 if option != "Chat Mode":
-    st.success(college_data[option.lower()])
+    st.success(college_data.get(option.lower(), "Data not available"))
 
 # -------------------------------
 # Chat Input
@@ -115,59 +124,88 @@ user_input = st.chat_input("Ask something...")
 def get_response(user_input):
     user_input = user_input.lower()
 
-    if "fee" in user_input:
+    if any(word in user_input for word in ["fee", "cost", "price"]):
         return college_data["fees"]
-    elif "courses" in user_input:
+
+    elif any(word in user_input for word in ["course", "study", "program"]):
         return college_data["courses"]
-     # elif "mayank" in user_input:
-     #    return college_data["mayank"]
+
     elif "hostel" in user_input:
         return college_data["hostel"]
-    # elif "hostel fees" in user_input:
-    #     return college_data["hostel fees"]
-    elif "placement" in user_input:
+
+    elif any(word in user_input for word in ["placement", "job"]):
         return college_data["placement"]
+
     elif "faculty" in user_input:
         return college_data["faculty"]
-    elif "about" in user_input or "college" in user_input:
+
+    elif any(word in user_input for word in ["about", "college", "university"]):
         return college_data["about"]
-    elif "hi" in user_input or "hello" in user_input or "namste bhai jii" in user_input:
-        return "AA GYA GANDU HIIIIIIIIII KESA LGA MERA MAJAK "
+
+    elif any(word in user_input for word in ["hi", "hello", "hey"]):
+        return "👋 Hello! How can I help you today?"
+
     else:
-        return "❗  ARE BHOSDIKE IN QUESTION ME SE KUCH PUCH NA KYU APNI GAND MRA RAHA HAI BHOSDII Try asking about fees, courses, placement, hostel."
+        return "❗ Please ask something related to fees, courses, placement, hostel, etc."
 
 # -------------------------------
-# Show old messages
-# -------------------------------
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-# -------------------------------
-# Typing Effect Function
+# Typing Effect
 # -------------------------------
 def type_effect(text):
     placeholder = st.empty()
-    typed = ""
+    typed_text = ""
     for char in text:
-        typed += char
-        placeholder.markdown(typed)
-        time.sleep(0.01)
+        typed_text += char
+        placeholder.markdown(f"**{typed_text}**")
+        time.sleep(0.005)
 
 # -------------------------------
-# New Message
+# Show Previous Messages
+# -------------------------------
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(f"**{msg['content']}**")
+
+# -------------------------------
+# Handle New Message
 # -------------------------------
 if user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
+    # Store user message
+    st.session_state.messages.append({
+        "role": "user",
+        "content": user_input
+    })
 
     with st.chat_message("user"):
-        st.markdown(user_input)
+        st.markdown(f"**{user_input}**")
 
+    # Generate response
     response = get_response(user_input)
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    # Store response
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": response
+    })
 
+    # Display response
     with st.chat_message("assistant"):
-#         type_effect(response)
+        type_effect(response)
 
+# -------------------------------
+# Footer
+# -------------------------------
+st.markdown("---")
+st.markdown(
+    "<p style='text-align:center;'>Made by Anshuman & Mayank 🚀</p>",
+    unsafe_allow_html=True
+)
+
+
+
+     
+    
+   
+  
+    
 
